@@ -69,3 +69,15 @@
 
 跨平台功能矩阵的字段、状态语义、更新流程和 CI 例外规则以
 `.agents/skills/develop-lithe/SKILL.md` 为准。开始涉及用户可观察功能或跨平台行为时，先读取该 Skill；不要在本文件复制一份会漂移的规则。
+
+## Cloud Agent（Linux）
+
+Cloud Agent 运行在 Linux 上。macOS 应用需要 Xcode 26.6 与 `.swift-version` 中的 Swift 6.3.3，Windows 安装包需要 WebView2 和 Tauri；这两条产品路径不能在此环境构建或启动。`cd windows/tauri && bun run dev` 只启动 Vite，普通浏览器会在 Tauri 窗口 API 处失败，不能代替 Windows 上的 `bun run desktop:dev`。
+
+此环境已准备的工具链与命令：
+
+- Bun `1.3.12`（根目录 `package.json` 的 `packageManager`）和 Rust stable（与 Windows CI 的 `dtolnay/rust-toolchain@stable` 一致）。`libsqlite3-dev` 供 `lithe-db-sidecar` 链接系统 SQLite。
+- 全局 `commit.gpgsign=false`。镜像默认会签名每一次 `git commit`，而 Lithe 在没有重签策略时拒绝改写已签名历史，Git 测试用普通 `git commit` 创建临时仓库。当前仓库的本地配置保持 `commit.gpgsign=true`，代理自己的提交仍然签名。
+- 共享核心：`cargo test --locked --manifest-path rust/Cargo.toml -p lithe-core`
+- Windows 前端类型检查：`cd windows/tauri && bun run typecheck`
+- 共享编辑器测试：`cd frontend/editor && bun test`
